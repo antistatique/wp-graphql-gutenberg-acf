@@ -34,7 +34,7 @@ if (!class_exists('WPGraphQLGutenbergACF')) {
         private static $time_type;
         private static $color_type;
         private static $link_type;
-        
+
         private $type_registry;
 
         public static function instance()
@@ -556,13 +556,19 @@ if (!class_exists('WPGraphQLGutenbergACF')) {
                     $multiple = $acf_field['multiple'] ?? false;
                     $type = 'user';
 
-                    $config = [
-                        'type' => $multiple ? ['list_of' => $type] : $type,
-                        'resolve' => self::generate_resolver(
-                            [DataSource::class, 'resolve_user'],
-                            $multiple
-                        )
-                    ];
+					$config = [
+						'type' => $multiple ? ['list_of' => $type] : $type,
+						'resolve' => self::generate_resolver(function (
+							$user,
+							$context
+						) use ($acf_field) {
+							return DataSource::resolve_user(
+								$user['ID'],
+								$context
+							);
+						},
+							$multiple)
+					];
 
                     break;
                 case 'google_map':
